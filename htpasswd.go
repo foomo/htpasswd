@@ -1,7 +1,10 @@
+// Package htpasswd is utility package to manipulate htpasswd files. I supports\
+// bcrypt and sha hashes.
 package htpasswd
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"strings"
 )
@@ -15,8 +18,8 @@ type HashAlgorithm string
 const (
 	// HashBCrypt bcrypt - recommended
 	HashBCrypt = "bcrypt"
-	// HashSHA5 sha5 insecure - do not use
-	HashSHA5 = "sha5"
+	// HashSHA sha5 insecure - do not use
+	HashSHA = "sha"
 )
 
 const (
@@ -45,13 +48,16 @@ func (hp HashedPasswords) WriteToFile(file string) error {
 
 // SetPassword set a password for a user with a hashing algo
 func (hp HashedPasswords) SetPassword(name, password string, hashAlgorithm HashAlgorithm) (err error) {
+	if len(password) == 0 {
+		return errors.New("passwords must not be empty, if you want to delete a user call RemoveUser")
+	}
 	hash := ""
 	prefix := ""
 	switch hashAlgorithm {
 	case HashBCrypt:
 		prefix = "$2y$"
 		hash, err = hashBcrypt(password)
-	case HashSHA5:
+	case HashSHA:
 		prefix = "{SHA}"
 		hash = hashSha(password)
 	}
@@ -77,19 +83,29 @@ func ParseHtpasswdFile(file string) (passwords HashedPasswords, err error) {
 
 // ParseHtpasswd parse htpasswd bytes
 func ParseHtpasswd(htpasswdBytes []byte) (passwords HashedPasswords, err error) {
-	lines := strings.Split(LineSeparator, string(htpasswdBytes))
+	lines := strings.Split(string(htpasswdBytes), LineSeparator)
 	passwords = make(map[string]string)
-	for _, line := range lines {
+	for lineNumber, line := range lines {
 		// scan lines
 		line = strings.Trim(line, " ")
 		if len(line) == 0 {
 			// skipping empty lines
 			continue
 		}
-		parts := strings.Split(PasswordSeparator, line)
+		parts := strings.Split(line, PasswordSeparator)
+		if len(parts) != 2 {
+			err = errors.New(fmt.Sprintln("invalid line", lineNumber+1, "unexpected number of parts split by", PasswordSeparator, len(parts), "instead of 2 in\"", line, "\""))
+			return
+		}
 		for i, part := range parts {
 			parts[i] = strings.Trim(part, " ")
 		}
+		_, alreadyExists := passwords[parts[0]]
+		if alreadyExists {
+			err = errors.New("invalid htpasswords file - user " + parts[0] + " was already defined")
+			return
+		}
+		passwords[parts[0]] = parts[1]
 	}
 	return
 }
@@ -101,6 +117,34 @@ func SetHtpasswdHash(file, name, hash string) error {
 		return err
 	}
 	passwords[name] = hash
+	return passwords.WriteToFile(file)
+}
+
+// RemoveUser remove an existing user from a file, returns an error, if the user does not \
+// exist in the file
+func RemoveUser(file, user string) error {
+	passwords, err := ParseHtpasswdFile(file)
+	if err != nil {
+		return err
+	}
+	_, ok := passwords[user]
+	if !ok {
+		return errors.New("user did not exist in file")
+	}
+	delete(passwords, user)
+	return passwords.WriteToFile(file)
+}
+
+// SetPasswordHash directly set a hash for a user in a file
+func SetPasswordHash(file, user, hash string) error {
+	if len(hash) == 0 {
+		return errors.New("you might want to rethink your hashing algorithm, it left you with an empty hash")
+	}
+	passwords, err := ParseHtpasswdFile(file)
+	if err != nil {
+		return err
+	}
+	passwords[user] = hash
 	return passwords.WriteToFile(file)
 }
 
