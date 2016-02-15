@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
@@ -150,9 +151,13 @@ func SetPasswordHash(file, user, hash string) error {
 
 // SetPassword set password for a user with a given hashing algorithm
 func SetPassword(file, name, password string, hashAlgorithm HashAlgorithm) error {
-	passwords, err := ParseHtpasswdFile(file)
-	if err != nil {
-		return err
+	_, err := os.Stat(file)
+	passwords := HashedPasswords(map[string]string{})
+	if err == nil {
+		passwords, err = ParseHtpasswdFile(file)
+		if err != nil {
+			return err
+		}
 	}
 	err = passwords.SetPassword(name, password, hashAlgorithm)
 	if err != nil {
