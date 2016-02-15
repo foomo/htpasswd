@@ -1,3 +1,5 @@
+![Travis CI](https://travis-ci.org/foomo/htpasswd.svg?branch=master)
+
 # This is a simple utility library to manipulate htpasswd files
 
 If you want to authenticate against a htpasswd file use something like https://github.com/abbot/go-http-auth .
