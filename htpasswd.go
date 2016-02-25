@@ -56,7 +56,6 @@ func (hp HashedPasswords) SetPassword(name, password string, hashAlgorithm HashA
 	prefix := ""
 	switch hashAlgorithm {
 	case HashBCrypt:
-		prefix = "$2y$"
 		hash, err = hashBcrypt(password)
 	case HashSHA:
 		prefix = "{SHA}"
