@@ -31,7 +31,7 @@ const (
 )
 
 // MaxHtpasswdFilesize if your htpassd file is larger than 8MB, then your are doing it wrong
-const MaxHtpasswdFilesize = 8 * 1024 * 1024 * 1024
+const MaxHtpasswdFilesize = 8 * 1024 * 1024
 
 // Bytes bytes representation
 func (hp HashedPasswords) Bytes() (passwordBytes []byte) {
