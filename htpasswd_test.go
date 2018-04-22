@@ -66,6 +66,10 @@ func TestRemoveUser(t *testing.T) {
 	if passwordsFromFile[firstUser] != "{SHA}2PRZAyDhNDqRW2OUFwZQqPNdaSY=" {
 		t.Fatal("failed to read right data from manipulated file")
 	}
+
+	if err := RemoveUser(f, "doesnotexist"); err != ErrNotExist {
+		t.Fatal("error returned when user does not exist is not ErrNotExist")
+	}
 }
 
 func TestCorruption(t *testing.T) {
