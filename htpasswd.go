@@ -33,6 +33,9 @@ const (
 // MaxHtpasswdFilesize if your htpassd file is larger than 8MB, then your are doing it wrong
 const MaxHtpasswdFilesize = 8 * 1024 * 1024
 
+// ErrNotExist is the error returned when a user does not exist.
+var ErrNotExist = errors.New("user did not exist in file")
+
 // Bytes bytes representation
 func (hp HashedPasswords) Bytes() (passwordBytes []byte) {
 	passwordBytes = []byte{}
@@ -129,7 +132,7 @@ func RemoveUser(file, user string) error {
 	}
 	_, ok := passwords[user]
 	if !ok {
-		return errors.New("user did not exist in file")
+		return ErrNotExist
 	}
 	delete(passwords, user)
 	return passwords.WriteToFile(file)
