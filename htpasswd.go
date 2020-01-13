@@ -17,6 +17,8 @@ type HashedPasswords map[string]string
 type HashAlgorithm string
 
 const (
+	// HashAPR1 Apache MD5 crypt - legacy
+	HashAPR1 = "apr1"
 	// HashBCrypt bcrypt - recommended
 	HashBCrypt = "bcrypt"
 	// HashSHA sha5 insecure - do not use
@@ -58,6 +60,8 @@ func (hp HashedPasswords) SetPassword(name, password string, hashAlgorithm HashA
 	hash := ""
 	prefix := ""
 	switch hashAlgorithm {
+	case HashAPR1:
+		hash, err = hashApr1(password)
 	case HashBCrypt:
 		hash, err = hashBcrypt(password)
 	case HashSHA:
