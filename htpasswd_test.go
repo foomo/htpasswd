@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/GehirnInc/crypt/apr1_crypt"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -16,6 +17,7 @@ func poe(err error) {
 
 func getHashedPasswords() HashedPasswords {
 	return HashedPasswords(map[string]string{
+		HashAPR1:   "$apr1$qxYNc6nQ$yp9F.jioKu3yR3T7fvXYs.",
 		HashBCrypt: "$2y$05$ClsF7kLEDvRXnKnqgYvKnOTq5lLoQ.etyJacxsHO2gGZezPKO/Lua",
 		HashSHA:    "{SHA}2PRZAyDhNDqRW2OUFwZQqPNdaSY=",
 	})
@@ -116,6 +118,11 @@ func TestHashing(t *testing.T) {
 			t.Fatal(err)
 		}
 		switch algo {
+		case HashAPR1:
+			err := apr1_crypt.New().Verify(hash, []byte(name))
+			if err != nil {
+				t.Fatal(algo, hash, testHashes[name])
+			}
 		case HashSHA:
 			if hash != testHashes[name] {
 				t.Fatal(algo, hash, testHashes[name])

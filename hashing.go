@@ -4,8 +4,13 @@ import (
 	"crypto/sha1"
 	"encoding/base64"
 
+	"github.com/GehirnInc/crypt/apr1_crypt"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func hashApr1(password string) (string, error) {
+	return apr1_crypt.New().Generate([]byte(password), nil)
+}
 
 func hashSha(password string) string {
 	s := sha1.New()
