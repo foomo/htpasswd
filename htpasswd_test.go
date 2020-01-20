@@ -135,3 +135,12 @@ func TestHashing(t *testing.T) {
 		}
 	}
 }
+
+func TestVerify(t *testing.T) {
+	testHashes := getHashedPasswords()
+	for _, algo := range HashAlgorithms {
+		if !testHashes.VerifyPassword(string(algo), string(algo), algo) {
+			t.Error(algo, testHashes[string(algo)])
+		}
+	}
+}
