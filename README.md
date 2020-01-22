@@ -33,4 +33,10 @@ Read user hash table:
 passwords, err := htpasswd.ParseHtpasswdFile(file)
 ```
 
+Verify password:
+
+```Go
+ok := passwords.VerifyPassword(name, password, htpasswd.HashBCrypt)
+```
+
 Have fun.
