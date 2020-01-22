@@ -21,6 +21,12 @@ password := "secret"
 err := htpasswd.SetPassword(file, name, password, htpasswd.HashBCrypt)
 ```
 
+Verify password in file:
+
+```Go
+ok, err := htpasswd.VerifyPassword(file, name, password, htpasswd.HashBCrypt)
+```
+
 Remove a user:
 
 ```Go
@@ -31,6 +37,12 @@ Read user hash table:
 
 ```Go
 passwords, err := htpasswd.ParseHtpasswdFile(file)
+```
+
+Verify password:
+
+```Go
+ok := passwords.VerifyPassword(name, password, htpasswd.HashBCrypt)
 ```
 
 Have fun.

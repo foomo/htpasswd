@@ -8,6 +8,9 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/GehirnInc/crypt/apr1_crypt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // HashedPasswords name => hash
@@ -24,6 +27,13 @@ const (
 	// HashSHA sha5 insecure - do not use
 	HashSHA = "sha"
 )
+
+// HashAlgorithms is a list of supported hashes
+var HashAlgorithms = []HashAlgorithm{
+	HashAPR1,
+	HashBCrypt,
+	HashSHA,
+}
 
 const (
 	// PasswordSeparator separates passwords from hashes
@@ -73,6 +83,25 @@ func (hp HashedPasswords) SetPassword(name, password string, hashAlgorithm HashA
 	}
 	hp[name] = prefix + hash
 	return nil
+}
+
+// VerifyPassword verify a password for a user with a hashing algo
+func (hp HashedPasswords) VerifyPassword(name, password string, hashAlgorithm HashAlgorithm) bool {
+	if len(password) == 0 {
+		return false
+	}
+	switch hashAlgorithm {
+	case HashAPR1:
+		err := apr1_crypt.New().Verify(hp[name], []byte(password))
+		return err == nil
+	case HashSHA:
+		return "{SHA}"+hashSha(password) == hp[name]
+	case HashBCrypt:
+		err := bcrypt.CompareHashAndPassword([]byte(hp[name]), []byte(password))
+		return err == nil
+	default:
+		return false
+	}
 }
 
 // ParseHtpasswdFile load a htpasswd file
@@ -170,4 +199,17 @@ func SetPassword(file, name, password string, hashAlgorithm HashAlgorithm) error
 		return err
 	}
 	return passwords.WriteToFile(file)
+}
+
+// VerifyPassword verify password in file for a user with a given hashing algorithm
+func VerifyPassword(file, name, password string, hashAlgorithm HashAlgorithm) (bool, error) {
+	_, err := os.Stat(file)
+	passwords := HashedPasswords(map[string]string{})
+	if err == nil {
+		passwords, err = ParseHtpasswdFile(file)
+		if err != nil {
+			return false, err
+		}
+	}
+	return passwords.VerifyPassword(name, password, hashAlgorithm), nil
 }
