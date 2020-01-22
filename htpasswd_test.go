@@ -51,12 +51,14 @@ func TestParseHtpassd(t *testing.T) {
 
 func TestEmptyHtpasswdFile(t *testing.T) {
 	f := tFile("empty")
+	defer os.Remove(f)
 	SetPassword(f, "sha", "sha", HashSHA)
 	fileContentsAre(t, f, "sha:{SHA}2PRZAyDhNDqRW2OUFwZQqPNdaSY=\n")
 }
 
 func TestRemoveUser(t *testing.T) {
 	f := tFile("removeUser")
+	defer os.Remove(f)
 	const firstUser = "sha"
 	SetPassword(f, firstUser, "sha", HashSHA)
 	const user = "foo"
@@ -92,6 +94,7 @@ func TestCorruption(t *testing.T) {
 
 func TestSetPasswordHash(t *testing.T) {
 	f := tFile("set-hashes")
+	defer os.Remove(f)
 	poe(SetPasswordHash(f, "a", "a"))
 	poe(SetPasswordHash(f, "b", "b"))
 	poe(SetPasswordHash(f, "c", "c"))
@@ -110,6 +113,7 @@ func TestSetPasswordHash(t *testing.T) {
 }
 func TestVerifyPasswordInFile(t *testing.T) {
 	f := tFile("verify-hash")
+	defer os.Remove(f)
 	SetPassword(f, "sha", "sha", HashSHA)
 	ok, err := VerifyPassword(f, "sha", "sha", HashSHA)
 	poe(err)
