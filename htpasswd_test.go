@@ -108,6 +108,15 @@ func TestSetPasswordHash(t *testing.T) {
 		t.Fatal("c failed")
 	}
 }
+func TestVerifyPasswordInFile(t *testing.T) {
+	f := tFile("verify-hash")
+	SetPassword(f, "sha", "sha", HashSHA)
+	ok, err := VerifyPassword(f, "sha", "sha", HashSHA)
+	poe(err)
+	if !ok {
+		t.Fatal("Hash in file verify failed")
+	}
+}
 
 func TestHashing(t *testing.T) {
 	testHashes := HashedPasswords(make(map[string]string))

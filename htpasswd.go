@@ -200,3 +200,16 @@ func SetPassword(file, name, password string, hashAlgorithm HashAlgorithm) error
 	}
 	return passwords.WriteToFile(file)
 }
+
+// VerifyPassword verify password in file for a user with a given hashing algorithm
+func VerifyPassword(file, name, password string, hashAlgorithm HashAlgorithm) (bool, error) {
+	_, err := os.Stat(file)
+	passwords := HashedPasswords(map[string]string{})
+	if err == nil {
+		passwords, err = ParseHtpasswdFile(file)
+		if err != nil {
+			return false, err
+		}
+	}
+	return passwords.VerifyPassword(name, password, hashAlgorithm), nil
+}
