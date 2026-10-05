@@ -135,3 +135,14 @@ func TestHashing(t *testing.T) {
 		}
 	}
 }
+
+func TestSetPasswordUnknownAlgorithm(t *testing.T) {
+	hp := HashedPasswords{}
+	err := hp.SetPassword("alice", "secret", HashAlgorithm("unknown"))
+	if err == nil {
+		t.Fatal("expected error for unsupported hash algorithm")
+	}
+	if _, ok := hp["alice"]; ok {
+		t.Fatal("user must not be stored when hashing fails")
+	}
+}

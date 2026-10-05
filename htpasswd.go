@@ -67,6 +67,8 @@ func (hp HashedPasswords) SetPassword(name, password string, hashAlgorithm HashA
 	case HashSHA:
 		prefix = "{SHA}"
 		hash = hashSha(password)
+	default:
+		return fmt.Errorf("unsupported hash algorithm: %s", hashAlgorithm)
 	}
 	if err != nil {
 		return err
